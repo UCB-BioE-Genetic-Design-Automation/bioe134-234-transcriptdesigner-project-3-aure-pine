@@ -1,5 +1,11 @@
 from genedesign.rbs_chooser import RBSChooser
 from genedesign.models.transcript import Transcript
+from genedesign.checkers.codon_checker import CodonChecker
+from genedesign.checkers.forbidden_sequence_checker import ForbiddenSequenceChecker
+from genedesign.checkers.hairpin_checker import hairpin_checker
+from genedesign.checkers.internal_promoter_checker import PromoterChecker
+from seq_utils.sample_codon import SampleCodon
+import numpy as np
 
 class TranscriptDesigner:
     """
@@ -9,38 +15,59 @@ class TranscriptDesigner:
     def __init__(self):
         self.aminoAcidToCodon = {}
         self.rbsChooser = None
+        self.codon_checker = None
+        self.forbidden_checker = None
+        self.promoter_checker = None
+        self.sample_codon = None
+
 
     def initiate(self) -> None:
         """
         Initializes the codon table and the RBS chooser.
         """
+        ### FOR DEVELOPMENT
+        self.rng = np.random.default_rng(seed=42)
+        
         self.rbsChooser = RBSChooser()
-        self.rbsChooser.initiate()
+        self.codon_checker = CodonChecker()
+        self.forbidden_checker = ForbiddenSequenceChecker()
+        self.promoter_checker = PromoterChecker()
+        self.sample_codon = SampleCodon()
 
-        # Codon table with highest CAI codon for each amino acid (for E. coli)
-        self.aminoAcidToCodon = {
-            'A': "GCG", 'C': "TGC", 'D': "GAT", 'E': "GAA", 'F': "TTC",
-            'G': "GGT", 'H': "CAC", 'I': "ATC", 'K': "AAA", 'L': "CTG",
-            'M': "ATG", 'N': "AAC", 'P': "CCG", 'Q': "CAG", 'R': "CGT",
-            'S': "TCT", 'T': "ACC", 'V': "GTT", 'W': "TGG", 'Y': "TAC"
-        }
+        self.rbsChooser.initiate()
+        self.codon_checker.initiate()
+        self.forbidden_checker.initiate()
+        self.promoter_checker.initiate()
+        self.sample_codon.initiate()
 
     def run(self, peptide: str, ignores: set) -> Transcript:
-        """
-        Translates the peptide sequence to DNA and selects an RBS.
         
-        Parameters:
-            peptide (str): The protein sequence to translate.
-            ignores (set): RBS options to ignore.
-        
-        Returns:
-            Transcript: The transcript object with the selected RBS and translated codons.
-        """
-        # Translate peptide to codons
-        codons = [self.aminoAcidToCodon[aa] for aa in peptide]
 
-        # Append the stop codon (TAA in this case)
-        codons.append("TAA")
+        
+        #while index < len(peptide) -3:
+
+        # Translate peptide to codons
+    
+        window_codons = NotImplemented
+        selected_dnaseq = ''.join(window_codons)
+
+        # Check sequence
+        codon_bool = self.codon_checker(window_codons)[0]
+        forbidden_bool = self.forbidden_checker(selected_dnaseq)[0]
+        promoter_bool = self.promoter_checker(selected_dnaseq)[0]
+        hairpin_bool = hairpin_checker(selected_dnaseq)[0]
+
+        if not all([codon_bool, forbidden_bool, promoter_bool, hairpin_bool]):
+            break
+
+        index += 3
+        
+        window_codons = []
+
+        for aa in window_peptides:
+            codon = self.sample_codon.run(aa, self.rng)
+            window_codons.append(codon)
+        
 
         # Build the CDS from the codons
         cds = ''.join(codons)
