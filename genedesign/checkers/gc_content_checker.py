@@ -27,9 +27,9 @@ def gc_content_checker(dna_seq: str) -> bool:
     # Calculate the length of the DNA
     total_length = len(dna_seq)
 
-    # Calculate GC content percentage
-    gc_content = (g_count + c_count) / total_length * 100
+    # Calculate the GC content as an integer ratio (to avoid floating-point precision issues)
+    gc_content_percentage = (g_count + c_count) * 100 / total_length
 
     # Return True if GC content is between 40% and 60%
-    return 40 <= gc_content <= 60
+    return 40 <= round(gc_content_percentage, 2) <= 60
 

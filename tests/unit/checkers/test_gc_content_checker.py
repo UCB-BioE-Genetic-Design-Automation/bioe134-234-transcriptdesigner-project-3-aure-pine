@@ -21,19 +21,23 @@ def test_edge_case_empty_sequence():
     with pytest.raises(ValueError, match="The DNA sequence cannot be empty."):
         gc_content_checker("")
 
+def test_lower_case():
+    dna_sequence = "ATGCGCATCG".lower()
+    assert gc_content_checker(dna_sequence) == True
+
 def test_gc_content_lower_boundary():
     # Case with exactly 40% GC content
-    dna_sequence = "ATGCGTATAT"
+    dna_sequence = "ATGCGTAGAT"
     assert gc_content_checker(dna_sequence) == True
 
 def test_gc_content_upper_boundary():
     # Case with exactly 60% GC content
-    dna_sequence = "ATGCGCGCGA"
+    dna_sequence = "ATGCGCGCTA"
     assert gc_content_checker(dna_sequence) == True
 
 def test_gc_content_below_40_percent():
     # Case with slightly below 40% GC content
-    dna_sequence = "ATGCGTATATTA"
+    dna_sequence = "ATGCGTATCTTA"
     assert gc_content_checker(dna_sequence) == False
 
 def test_gc_content_above_60_percent():
