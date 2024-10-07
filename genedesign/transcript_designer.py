@@ -39,7 +39,7 @@ class TranscriptDesigner:
         self.forbidden_checker.initiate()
         self.promoter_checker.initiate()
         self.sample_codon.initiate()
-
+""" 
     def run(self, peptide: str, ignores: set) -> Transcript:
         
 
@@ -57,17 +57,16 @@ class TranscriptDesigner:
         promoter_bool = self.promoter_checker(selected_dnaseq)[0]
         hairpin_bool = hairpin_checker(selected_dnaseq)[0]
 
-        if not all([codon_bool, forbidden_bool, promoter_bool, hairpin_bool]):
-            break
+        # if not all([codon_bool, forbidden_bool, promoter_bool, hairpin_bool]):
+    
 
-        index += 3
+        # index += 3
         
-        window_codons = []
-
-        for aa in window_peptides:
-            codon = self.sample_codon.run(aa, self.rng)
-            window_codons.append(codon)
+        # window_codons = []
         
+        # for aa in window_peptides:
+        #     codon = self.sample_codon.run(aa, self.rng)
+        #     window_codons.append(codon)
 
         # Build the CDS from the codons
         cds = ''.join(codons)
@@ -77,7 +76,7 @@ class TranscriptDesigner:
 
         # Return the Transcript object
         return Transcript(selectedRBS, peptide, codons)
-
+ """
 if __name__ == "__main__":
     # Example usage of TranscriptDesigner
     peptide = "MYPFIRTARMTV"

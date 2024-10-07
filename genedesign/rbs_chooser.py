@@ -10,44 +10,85 @@ class RBSChooser:
 
     def initiate(self) -> None:
         """
-        Populates the RBS options list with predefined options.
+        Initialization method for RBSChooser.
         """
-        # Add RBS options based on their sequences and properties
-        opt1 = RBSOption(
-            utr="aaagaggagaaatactag",
-            cds="atggcttcctccgaagacgttatcaaagagttcatgcgtttcaaagttcgtatggaaggttccgttaacggtcacgagttcgaaatcgaaggtgaaggtgaaggtcgtccgtacgaaggtacccagaccgctaaactgaaagttaccaaaggtggtccgctgccgttcgcttgggacatcctgtccccgcagttccagtacggttccaaagcttacgttaaacacccggctgacatcccggactacctgaaactgtccttcccggaaggtttcaaatgggaacgtgttatgaacttcgaagacggtggtgttgttaccgttacccaggactcctccctgcaagacggtgagttcatctacaaagttaaactgcgtggtaccaacttcccgtccgacggtccggttatgcagaaaaaaaccatgggttgggaagcttccaccgaacgtatgtacccggaagacggtgctctgaaaggtgaaatcaaaatgcgtctgaaactgaaagacggtggtcactacgacgctgaagttaaaaccacctacatggctaaaaaaccggttcagctgccgggtgcttacaaaaccgacatcaaactggacatcacctcccacaacgaagactacaccatcgttgaacagtacgaacgtgctgaaggtcgtcactccaccggtgcttaa",
-            gene_name="BBa_b0034",
-            first_six_aas="MASSED"
-        )
-        opt2 = RBSOption(
-            utr="tcacacaggaaagtactag",
-            cds="atgactcaacgtatcgcatatgtaactggtggtatgggtggtatcggtactgcaatttgccagcgtctggcgaaagacggtttccgtgttgttgcgggctgcggtccgaactccccgcgtcgtgaaaagtggctggaacaacagaaagccctgggcttcgacttcattgcctccgagggtaatgtagctgactgggattccaccaagactgccttcgataaagttaaatctgaagtgggcgaagtagatgtactgatcaacaacgccggtattactcgtgatgtcgtattccgcaaaatgacccgtgcagactgggatgcagttatcgacaccaacctgacgtctctgttcaacgttaccaaacaggttattgatggtatggctgaccgtggctggggccgcatcgtgaacatctctagcgttaacggccaaaaaggccaatttggtcagacgaattacagcacggctaaagcaggcctgcacggtttcaccatggcactggcgcaggaagtggcgaccaaaggtgttaccgttaataccgtttctccaggttacatcgccaccgatatggttaaggctatccgccaagatgttctggacaagatcgtggctaccattccggttaaacgcctgggcctgccggaagaaattgcgtccatctgtgcgtggctgagctccgaagagtctggtttttccaccggtgcggatttctctctgaacggtggtctgcacatgggttga",
-            gene_name="BBa_b0032",
-            first_six_aas="MTQRIA"
-        )
-        opt3 = RBSOption(
-            utr="CCATACCCGTTTTTTTGGGCTAACAGGAGGAATTAAcc",
-            cds="atgGacacAattaacatcgctaagaacgacttctctgacatcgaactggctgctatcccgttcaacactctggctgaccattacggtgagcgtttagctcgcgaacagttggcccttgagcatgagtcttacgagatgggtgaagcacgcttccgcaagatgtttgagcgtcaacttaaagctggtgaggttgcggataacgctgccgccaagcctctcatcactaccctactccctaagatgattgcacgcatcaacgactggtttgaggaagtgaaagctaagcgcggcaagcgcccgacagccttccagttcctgcaagaaatcaagccggaagccgtagcgtacatcaccattaagaccactctggcttgcctaaccagtgctgacaatacaaccgttcaggctgtagcaagcgcaatcggtcgggccattgaggacgaggctcgcttcggtcgtatccgtgaccttgaagctaagcacttcaagaaaaacgttgaggaacaactcaacaagcgcgtagggcacgtctacaagaaagcatttatgcaagttgtcgaggctgacatgctctctaagggtctactcggtggcgaggcgtggtcttcgtggcataaggaagactctattcatgtaggagtacgctgcatcgagatgctcattgagtcaaccggaatggttagcttacaccgccaaaatgctggcgtagtaggtcaagactctgagactatcgaactcgcacctgaatacgctgaggctatcgcaacccgtgcaggtgcgctggctggcatctctccgatgttccaaccttgcgtagttcctcctaagccgtggactggcattactggtggtggctattgggctaacggtcgtcgtcctctggcgctggtgcgtactcacagtaagaaagcactgatgcgctacgaagacgtttacatgcctgaggtgtacaaagcgattaacattgcgcaaaacaccgcatggaaaatcaacaagaaagtcctagcggtcgccaacgtaatcaccaagtggaagcattgtccggtcgaggacatccctgcgattgagcgtgaagaactcccgatgaaaccggaagacatcgacatgaatcctgaggctctcaccgcgtggaaacgtgctgccgctgctgtgtaccgcaaggacaaggctcgcaagtctcgccgtatcagccttgagttcatgcttgagcaagccaataagtttgctaaccataaggccatctggttcccttacaacatggactggcgcggtcgtgtttacgctgtgtcaatgttcaacccgcaaggtaacgatatgaccaaaggactgcttacgctggcgaaaggtaaaccaatcggtaaggaaggttactactggctgaaaatccacggtgcaaactgtgcgggtgtcgataaggttccgttccctgagcgcatcaagttcattgaggaaaaccacgagaacatcatggcttgcgctaagtctccactggagaacacttggtgggctgagcaagattctccgttctgcttccttgcgttctgctttgagtacgctggggtacagcaccacggcctgagctataactgctcccttccgctggcgtttgacgggtcttgctctggcatccagcacttctccgcgatgctccgagatgaggtaggtggtcgcgcggttaacttgcttcctagtgaaaccgttcaggacatctacgggattgttgctaagaaagtcaacgagattctacaagcagacgcaatcaatgggaccgataacgaagtagttaccgtgaccgatgagaacactggtgaaatctctgagaaagtcaagctgggcactaaggcactggctggtcaatggctggcttacggtgttactcgcagtgtgactaagcgttcagtcatgacgctggcttacgggtccaaagagttcggcttccgtcaacaagtgctggaagataccattcagccagctattgattccggcaagggtctgatgttcactcagccgaatcaggctgctggatacatggctaagctgatttgggaatctgtgagcgtgacggtggtagctgcggttgaagcaatgaactggcttaagtctgctgctaagctgctggctgctgaggtcaaagataagaagactggagagattcttcgcaagcgttgcgctgtgcattgggtaactcctgatggtttccctgtgtggcaggaatacaagaagcctattcagacgcgcttgaacctgatgttcctcggtcagttccgcttacagcctaccattaacaccaacaaagatagcgagattgatgcacacaaacaggagtctggtatcgctcctaactttgtacacagccaagacggtagccaccttcgtaagactgtagtgtgggcacacgagaagtacggaatcgaatcttttgcactgattcacgactccttcggtaccattccggctgacgctgcgaacctgttcaaagcagtgcgcgaaactatggttgacacatatgagtcttgtgatgtactggctgatttctacgaccagttcgctgaccagttgcacgagtctcaattggacaaaatgccagcacttccggctaaaggtaacttgaacctccgtgacatcttagagtcggacttcgcgttcgcAtaa",
-            gene_name="Pbad_rbs",
-            first_six_aas="MDTINI"
-        )
-        self.rbsOptions.extend([opt1, opt2, opt3])
 
-    def run(self, cds: str, ignores: set) -> RBSOption:
+        locus_file_path = "genedesign/data/511145-WHOLE_ORGANISM-integrated.txt"  # Path to the text file
+        genbank_file_path = "genedesign/data/Ecoli_sequence.gb"  # Path to the GenBank file
+
+        self.translator = Translate()
+        self.translator.initiate()
+        self.rbs_options: List[RBSOption] = []
+
+        top_5_percent_utr_cds = get_top_5_percent_utr_cds(locus_file_path, genbank_file_path)
+
+        for locus_tag, data in top_5_percent_utr_cds.items():
+            gene_name = data['gene']
+            utr = data['UTR']
+            cds = data['CDS']
+
+            # Calculate the first six amino acids
+            first_six_aas = self.translator.run(cds[:18])  # First six amino acids come from the first 18 nucleotides
+
+            # Create an RBSOption and add it to the list
+            rbs_option = RBSOption(utr=utr, cds=cds, gene_name=gene_name, first_six_aas=first_six_aas)
+            self.rbs_options.append(rbs_option)
+
+
+    def run(self, cds: str, ignores: Set[RBSOption]) -> RBSOption:
         """
-        Selects an RBS that is not in the ignore set.
-        
+        Executes the RBS selection process for the given CDS.
+
         Parameters:
-            cds (str): The coding sequence.
-            ignores (set): A set of RBS options to ignore.
-        
+        - cds (str): The coding sequence to pair with an RBS. Must contain only valid DNA nucleotides (A, T, G, C).
+        - ignores (Set[RBSOption]): A set of RBSOption instances to ignore during selection.
+
         Returns:
-            RBSOption: The selected RBS option.
+        - RBSOption: The selected RBSOption that best pairs with the given CDS.
+
+        Raises:
+        - ValueError: If the cds contains characters other than 'A', 'T', 'G', or 'C', or if no valid RBS options remain after filtering.
         """
-        for rbsopt in self.rbsOptions:
-            if rbsopt not in ignores:
-                return rbsopt
-        raise Exception("No valid RBS option available.")
+
+        # Input validation: Check for invalid characters in the CDS
+        valid_nucleotides = {'A', 'T', 'G', 'C'}
+        if not all(nucleotide in valid_nucleotides for nucleotide in cds):
+            raise ValueError(f"Invalid characters found in CDS: {cds}. Only 'A', 'T', 'G', and 'C' are allowed.")
+
+        # Step 1: Exclude RBSOptions that are in the ignores set
+        available_rbs_options = [rbs_option for rbs_option in self.rbs_options if rbs_option not in ignores]
+
+        # Check if any valid RBSOptions remain after exclusion
+        if not available_rbs_options:
+            raise ValueError("No valid RBS options available after filtering.")
+
+        # Initialize variables to keep track of the best option and the best score
+        best_rbs_option = None
+        best_score = float('inf')  # Lower score is better
+        input_peptide = self.translator.run(cds[:18])  # Get the first six amino acids from the input CDS
+
+        # Define weights for each criterion (adjust these as needed)
+        hairpin_weight = 0.5  # Weight for secondary structure
+        peptide_weight = 0.5  # Weight for peptide similarity
+
+        # Step 2 and 3: Iterate through available RBSOptions
+        for rbs_option in available_rbs_options:
+            # Step 2: Calculate the hairpin score using hairpin_counter
+            hairpin_score = hairpin_counter(rbs_option.utr + cds, min_stem=4, min_loop=3, max_loop=8)
+
+            # Step 3: Calculate the peptide similarity score using calc_edit_distance
+            peptide_similarity_score = calculate_edit_distance(input_peptide, rbs_option.first_six_aas)
+
+            # Combine the scores using a weighted sum
+            final_score = (hairpin_score * hairpin_weight) + (peptide_similarity_score * peptide_weight)
+
+            # Update the best RBSOption if the current one has a lower score
+            if final_score < best_score:
+                best_score = final_score
+                best_rbs_option = rbs_option
+
+        # Return the RBSOption with the lowest combined score
+        return best_rbs_option
 
 if __name__ == "__main__":
     # Example usage of RBSChooser

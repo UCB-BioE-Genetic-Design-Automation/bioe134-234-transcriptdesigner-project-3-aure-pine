@@ -1,5 +1,7 @@
 import numpy as np
 import csv
+import sys
+sys.path.insert(0, "/path/to/your/package_or_module")
 
 class SampleCodon:
     """
@@ -69,7 +71,7 @@ class SampleCodon:
             )
 
         
-    def run(self, amino_acid:str, generator:np.random.Generator) -> str:
+    def run(self, amino_acid:str) -> str:
         """
         Samples a codon for a given amino acid based on the stored CAI probabilities.
 
@@ -80,6 +82,34 @@ class SampleCodon:
         Returns:
         str: The sampled codon based on the CAI probabilities for the given amino acid.
         """
-        codons, probabilities = self.codon_probabilities.get(amino_acid)
-        return np.random.Generator.choice(codons, p=probabilities)
+        amino_acids = np.array([
+                'A', 'R', 'N', 'D', 'C', 
+                'Q', 'E', 'G', 'H', 'I', 
+                'L', 'K', 'M', 'F', 'P', 
+                'S', 'T', 'W', 'Y', 'V',
+                '*'
+            ])
+        if not amino_acid in amino_acids:
+            raise ValueError(f"Invalid amino acid: {amino_acid}.")
+        codons, probs = self.codon_probabilities[amino_acid]
+        return np.random.choice(codons, p=probs)
 
+    # For debugging
+    def datastructure(self):
+        return self.codon_probabilities
+
+if __name__ == "__main__":
+    rng = np.random.seed(seed=42)
+    aa1 = "A"
+    
+    sampler = SampleCodon()
+    sampler.initiate()
+
+    ignores = set()
+    codon1 = sampler.run(aa1)
+    codon2 = sampler.run(aa1)
+    
+    # Print out the selected codons
+    print(codon1), print(codon2)
+    
+    
