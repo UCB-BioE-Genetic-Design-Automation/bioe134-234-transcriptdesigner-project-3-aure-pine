@@ -1,4 +1,8 @@
 from genedesign.models.rbs_option import RBSOption
+from seq_utils.calc_edit_distance import calculate_edit_distance
+from seq_utils.hairpin_counter import non_stupid_hairpin_counter
+from seq_utils.Translate import Translate
+from seq_utils.get_top_5_percent_utr_cds import get_top_5_percent_utr_cds
 
 class RBSChooser:
     """
@@ -6,6 +10,7 @@ class RBSChooser:
     """
 
     def __init__(self):
+        self.translator = None
         self.rbsOptions = []
 
     def initiate(self) -> None:
@@ -18,7 +23,7 @@ class RBSChooser:
 
         self.translator = Translate()
         self.translator.initiate()
-        self.rbs_options: List[RBSOption] = []
+        self.rbs_options: list[RBSOption] = []
 
         top_5_percent_utr_cds = get_top_5_percent_utr_cds(locus_file_path, genbank_file_path)
 
@@ -35,7 +40,7 @@ class RBSChooser:
             self.rbs_options.append(rbs_option)
 
 
-    def run(self, cds: str, ignores: Set[RBSOption]) -> RBSOption:
+    def run(self, cds: str, ignores: set[RBSOption]) -> RBSOption:
         """
         Executes the RBS selection process for the given CDS.
 
@@ -74,13 +79,13 @@ class RBSChooser:
         # Step 2 and 3: Iterate through available RBSOptions
         for rbs_option in available_rbs_options:
             # Step 2: Calculate the hairpin score using hairpin_counter
-            hairpin_score = hairpin_counter(rbs_option.utr + cds, min_stem=4, min_loop=3, max_loop=8)
+            hairpin_score = non_stupid_hairpin_counter(rbs_option.utr + cds, min_stem=4, min_loop=3, max_loop=8)
 
-            # Step 3: Calculate the peptide similarity score using calc_edit_distance
+            # Step 3: Calculate the peptide similarity score using calculate_edit_distance
             peptide_similarity_score = calculate_edit_distance(input_peptide, rbs_option.first_six_aas)
 
             # Combine the scores using a weighted sum
-            final_score = (hairpin_score * hairpin_weight) + (peptide_similarity_score * peptide_weight)
+            final_score = (float(hairpin_score) * hairpin_weight) + (float(peptide_similarity_score) * peptide_weight)
 
             # Update the best RBSOption if the current one has a lower score
             if final_score < best_score:
@@ -92,7 +97,8 @@ class RBSChooser:
 
 if __name__ == "__main__":
     # Example usage of RBSChooser
-    cds = "ATGGTAAGAAAACAGTTGCAGAGAGTTGAATT..."
+    cds1 = "ATGGTAAGAAAACAGTTGCAGAGAGTTGAATT"
+    cds2 = "ATGGCTAGCAAATACGATTTTACAATATAA"
 
     # Initialize the chooser
     chooser = RBSChooser()
@@ -100,13 +106,13 @@ if __name__ == "__main__":
 
     # Choose RBS with no ignores
     ignores = set()
-    selected1 = chooser.run(cds, ignores)
+    selected1 = chooser.run(cds2, ignores)
     
     # Add the first selection to the ignore list
     ignores.add(selected1)
     
     # Choose another RBS option after ignoring the first
-    selected2 = chooser.run(cds, ignores)
+    selected2 = chooser.run(cds2, ignores)
 
     # Print the selected RBS options
     print("Selected1:", selected1)
