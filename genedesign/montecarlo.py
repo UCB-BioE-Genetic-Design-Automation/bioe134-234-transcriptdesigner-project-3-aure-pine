@@ -35,8 +35,5 @@ def montecarlo(window: str, last_n_codons: list[str], codon_sampler: SampleCodon
     if not good_seq:
         raise RuntimeError("Unable to generate a valid sequence after multiple attempts")
     
-    #debug
-    print(generated_codons)
-
     # Return only the first n codons in scope
     return generated_codons[:n_codons_in_scope]

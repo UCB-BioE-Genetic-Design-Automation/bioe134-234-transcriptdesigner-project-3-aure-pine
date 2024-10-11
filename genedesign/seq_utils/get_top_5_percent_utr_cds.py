@@ -137,19 +137,20 @@ def get_top_5_percent_utr_cds(locus_file_path, genbank_file_path):
     return top_5_percent_info
 
 # Example usage
-locus_file_path = "genedesign/data/511145-WHOLE_ORGANISM-integrated.txt"  # Path to the text file
-genbank_file_path = "genedesign/data/Ecoli_sequence.gb"  # Path to the GenBank file
+if __name__ == "__main__":
+    locus_file_path = "genedesign/data/511145-WHOLE_ORGANISM-integrated.txt"  # Path to the text file
+    genbank_file_path = "genedesign/data/Ecoli_sequence.gb"  # Path to the GenBank file
 
 
-top_5_percent_utr_cds = get_top_5_percent_utr_cds(locus_file_path, genbank_file_path)
+    top_5_percent_utr_cds = get_top_5_percent_utr_cds(locus_file_path, genbank_file_path)
 
-# Print a few examples from the resulting dictionary
-if top_5_percent_utr_cds:
-    for locus_tag, sequences in list(top_5_percent_utr_cds.items())[:5]:  # Print first 5 entries
-        print(f"Locus Tag: {locus_tag}")
-        print(f"Gene: {sequences['gene']}")
-        print(f"UTR: {sequences['UTR']}")
-        print(f"CDS: {sequences['CDS']}")
-        print("-" * 40)
-else:
-    print("No matching locus tags found in the top 5%.")
+    # Print a few examples from the resulting dictionary
+    if top_5_percent_utr_cds:
+        for locus_tag, sequences in list(top_5_percent_utr_cds.items())[:5]:  # Print first 5 entries
+            print(f"Locus Tag: {locus_tag}")
+            print(f"Gene: {sequences['gene']}")
+            print(f"UTR: {sequences['UTR']}")
+            print(f"CDS: {sequences['CDS']}")
+            print("-" * 40)
+    else:
+        print("No matching locus tags found in the top 5%.")
