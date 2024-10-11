@@ -1,11 +1,12 @@
 from genedesign.rbs_chooser import RBSChooser
 from genedesign.models.transcript import Transcript
-from genedesign.checkers.codon_checker import CodonChecker
-from genedesign.checkers.forbidden_sequence_checker import ForbiddenSequenceChecker
-from genedesign.checkers.hairpin_checker import hairpin_checker
-from genedesign.checkers.internal_promoter_checker import PromoterChecker
+from genedesign.seq_utils.check_seq import CheckSequence
 from seq_utils.sample_codon import SampleCodon
+from sliding_window_generator import sliding_window_generator
 import numpy as np
+
+## SEARCH ALGORITHMS
+from genedesign.montecarlo import montecarlo
 
 class TranscriptDesigner:
     """
@@ -13,13 +14,12 @@ class TranscriptDesigner:
     """
 
     def __init__(self):
-        self.aminoAcidToCodon = {}
         self.rbsChooser = None
-        self.codon_checker = None
-        self.forbidden_checker = None
-        self.promoter_checker = None
-        self.sample_codon = None
+        self.search_selection_algo = None
+        self.seq_checker = None
+        self.codon_sampler = None
 
+        self.search_selection_algo = None
 
     def initiate(self) -> None:
         """
@@ -27,46 +27,39 @@ class TranscriptDesigner:
         """
         ### FOR DEVELOPMENT
         self.rng = np.random.default_rng(seed=42)
-        
+
         self.rbsChooser = RBSChooser()
-        self.codon_checker = CodonChecker()
-        self.forbidden_checker = ForbiddenSequenceChecker()
-        self.promoter_checker = PromoterChecker()
-        self.sample_codon = SampleCodon()
+        self.seq_checker = CheckSequence()
+        self.codon_sampler = SampleCodon()
 
         self.rbsChooser.initiate()
-        self.codon_checker.initiate()
-        self.forbidden_checker.initiate()
-        self.promoter_checker.initiate()
-        self.sample_codon.initiate()
-""" 
+        self.seq_checker.initiate()
+        self.codon_sampler.initiate()
+
+        ## SEARCH ALGORITHMS ##
+        # Montecarlo method
+        self.search_selection_algo = montecarlo
+
+        # MCTS + window
+        # self.search_selection_algo = MCTS()
+        # self.search_selection_algo.initiate()
+
+        # ML algo
+
     def run(self, peptide: str, ignores: set) -> Transcript:
+
+        codons = []
         
+        # Parameters
+        n_codons_in_scope = 3
+        n_behind = 3
+        n_ahead = 6
+        step = None
 
-        
-        #while index < len(peptide) -3:
-
-        # Translate peptide to codons
-    
-        window_codons = NotImplemented
-        selected_dnaseq = ''.join(window_codons)
-
-        # Check sequence
-        codon_bool = self.codon_checker(window_codons)[0]
-        forbidden_bool = self.forbidden_checker(selected_dnaseq)[0]
-        promoter_bool = self.promoter_checker(selected_dnaseq)[0]
-        hairpin_bool = hairpin_checker(selected_dnaseq)[0]
-
-        # if not all([codon_bool, forbidden_bool, promoter_bool, hairpin_bool]):
-    
-
-        # index += 3
-        
-        # window_codons = []
-        
-        # for aa in window_peptides:
-        #     codon = self.sample_codon.run(aa, self.rng)
-        #     window_codons.append(codon)
+        for window in sliding_window_generator(peptide, n_in_scope=n_codons_in_scope, n_ahead=n_ahead, step=step):
+            last_n_codons = codons[-n_behind:]
+            window_codons = self.search_selection_algo.run(window, last_n_codons, n_codons_in_scope=n_codons_in_scope, codon_sampler=self.codon_sampler, seq_checker=self.seq_checker)
+            codons.append(window_codons)
 
         # Build the CDS from the codons
         cds = ''.join(codons)
@@ -76,7 +69,7 @@ class TranscriptDesigner:
 
         # Return the Transcript object
         return Transcript(selectedRBS, peptide, codons)
- """
+
 if __name__ == "__main__":
     # Example usage of TranscriptDesigner
     peptide = "MYPFIRTARMTV"

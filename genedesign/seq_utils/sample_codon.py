@@ -1,7 +1,5 @@
 import numpy as np
 import csv
-import sys
-sys.path.insert(0, "/path/to/your/package_or_module")
 
 class SampleCodon:
     """

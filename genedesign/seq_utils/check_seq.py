@@ -37,5 +37,5 @@ class CheckSequence:
         if not result:
             return False, results
         
-        return result, None
+        return True, None
 
