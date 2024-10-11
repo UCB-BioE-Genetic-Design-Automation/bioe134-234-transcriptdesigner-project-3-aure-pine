@@ -9,9 +9,6 @@ import numpy as np
 from genedesign.montecarlo import montecarlo
 
 class TranscriptDesigner:
-    """
-    Reverse translates a protein sequence into a DNA sequence and chooses an RBS using the highest CAI codon for each amino acid.
-    """
 
     def __init__(self):
         self.rbsChooser = None
@@ -22,9 +19,6 @@ class TranscriptDesigner:
         self.search_selection_algo = None
 
     def initiate(self) -> None:
-        """
-        Initializes the codon table and the RBS chooser.
-        """
         ### FOR DEVELOPMENT
         self.rng = np.random.default_rng(seed=42)
 
@@ -38,7 +32,6 @@ class TranscriptDesigner:
 
         ## SEARCH ALGORITHMS ##
         # Montecarlo method
-        self.search_selection_algo = montecarlo
 
         # MCTS + window
         # self.search_selection_algo = MCTS()
@@ -58,8 +51,8 @@ class TranscriptDesigner:
 
         for window in sliding_window_generator(peptide, n_in_scope=n_codons_in_scope, n_ahead=n_ahead, step=step):
             last_n_codons = codons[-n_behind:]
-            window_codons = self.search_selection_algo.run(window, last_n_codons, n_codons_in_scope=n_codons_in_scope, codon_sampler=self.codon_sampler, seq_checker=self.seq_checker)
-            codons.append(window_codons)
+            window_codons = montecarlo(window, last_n_codons, n_codons_in_scope=n_codons_in_scope, codon_sampler=self.codon_sampler, seq_checker=self.seq_checker)
+            codons.extend(window_codons)
 
         # Build the CDS from the codons
         cds = ''.join(codons)

@@ -29,11 +29,14 @@ def montecarlo(window: str, last_n_codons: list[str], codon_sampler: SampleCodon
     # Continue sampling codons and checking the sequence until a valid one is generated
     while not good_seq and attempts < max_attempts:
         generated_codons = [codon_sampler.run(amino_acid) for amino_acid in window]
-        good_seq, _ = seq_checker(last_n_codons + generated_codons)
+        good_seq, _ = seq_checker.run(last_n_codons + generated_codons)
         attempts += 1
 
     if not good_seq:
         raise RuntimeError("Unable to generate a valid sequence after multiple attempts")
+    
+    #debug
+    print(generated_codons)
 
     # Return only the first n codons in scope
     return generated_codons[:n_codons_in_scope]

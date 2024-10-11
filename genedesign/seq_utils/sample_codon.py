@@ -90,7 +90,7 @@ class SampleCodon:
         if not amino_acid in amino_acids:
             raise ValueError(f"Invalid amino acid: {amino_acid}.")
         codons, probs = self.codon_probabilities[amino_acid]
-        return np.random.choice(codons, p=probs)
+        return str(np.random.choice(codons, p=probs))
 
     # For debugging
     def datastructure(self):
