@@ -11,7 +11,7 @@ def montecarlo(window: str, last_n_codons: list[str], codon_sampler: SampleCodon
     - window (str): A string of amino acids to be translated into codons.
     - last_n_codons (list[str]): A list of previously generated codons, used to maintain context when generating new codons.
     - codon_sampler (SampleCodon): An instance of a codon sampler that samples codons based on the given amino acids.
-    - seq_checker (Callable[[list[str]], Tuple[bool, Any]]): A callable sequence checker that validates the concatenated codons (previous codons + generated codons) and returns a tuple (bool, info).
+    - seq_checker (CheckSequence): An instance of a sequence checker that validates the concatenated codons (previous codons + generated codons) and returns a tuple (bool, info).
     - n_codons_in_scope (int, optional): The number of codons to return from the generated list. Defaults to 3.
 
     Output:

@@ -7,7 +7,7 @@ from genedesign.montecarlo import montecarlo  # Replace 'your_module' with the a
 def test_montecarlo_typical_case():
     # Mock the SampleCodon instance
     codon_sampler = Mock(SampleCodon)
-    codon_sampler.run.side_effect = ['AUG', 'ACA', 'AAA']  # Codons for "MTK"
+    codon_sampler.run.side_effect = ['ATG', 'ACA', 'AAA']  # Codons for "MTK"
 
     # Mock the CheckSequence instance
     seq_checker = Mock(CheckSequence)
@@ -15,19 +15,19 @@ def test_montecarlo_typical_case():
 
     # Test inputs
     window = "MTK"
-    last_n_codons = ["AUG", "ACA"]
+    last_n_codons = ["ATG", "ACA"]
     n_codons_in_scope = 3
 
     # Run the function
     result = montecarlo(window, last_n_codons, codon_sampler, seq_checker, n_codons_in_scope)
 
     # Check the result
-    assert result == ["AUG", "ACA", "AAA"]
+    assert result == ["ATG", "ACA", "AAA"]
 
 def test_montecarlo_single_codon():
     # Mock the SampleCodon instance
     codon_sampler = Mock(SampleCodon)
-    codon_sampler.run.side_effect = ['AUG']  # Codon for "M"
+    codon_sampler.run.side_effect = ['ATG']  # Codon for "M"
 
     # Mock the CheckSequence instance
     seq_checker = Mock(CheckSequence)
@@ -35,14 +35,14 @@ def test_montecarlo_single_codon():
 
     # Test inputs
     window = "M"
-    last_n_codons = ["AUG"]
+    last_n_codons = ["ATG"]
     n_codons_in_scope = 1
 
     # Run the function
     result = montecarlo(window, last_n_codons, codon_sampler, seq_checker, n_codons_in_scope)
 
     # Check the result
-    assert result == ["AUG"]
+    assert result == ["ATG"]
 
 def test_montecarlo_empty_window():
     # Mock the SampleCodon instance
@@ -53,7 +53,7 @@ def test_montecarlo_empty_window():
 
     # Test inputs
     window = ""
-    last_n_codons = ["AUG"]
+    last_n_codons = ["ATG"]
 
     # Expect a ValueError for an empty window
     with pytest.raises(ValueError, match="Window cannot be empty"):
@@ -63,7 +63,7 @@ def test_montecarlo_max_attempts():
     # Mock the SampleCodon instance
     codon_sampler = Mock(SampleCodon)
     # Use a lambda to continually return the same codons, avoiding StopIteration
-    codon_sampler.run.side_effect = lambda amino_acid: 'AUG'
+    codon_sampler.run.side_effect = lambda amino_acid: 'ATG'
 
     # Mock the CheckSequence instance to always return False, so it keeps looping
     seq_checker = Mock(CheckSequence)
@@ -71,7 +71,7 @@ def test_montecarlo_max_attempts():
 
     # Test inputs
     window = "MTK"
-    last_n_codons = ["AUG", "ACA"]
+    last_n_codons = ["ATG", "ACA"]
 
     # Expect a RuntimeError because the sequence never becomes valid
     with pytest.raises(RuntimeError, match="Unable to generate a valid sequence after multiple attempts"):
@@ -80,7 +80,7 @@ def test_montecarlo_max_attempts():
 def test_montecarlo_partial_codons_returned():
     # Mock the SampleCodon instance
     codon_sampler = Mock(SampleCodon)
-    codon_sampler.run.side_effect = ['AUG', 'ACA', 'AAA']
+    codon_sampler.run.side_effect = ['ATG', 'ACA', 'AAA']
 
     # Mock the CheckSequence instance to return True after the first two codons
     seq_checker = Mock(CheckSequence)
@@ -88,11 +88,11 @@ def test_montecarlo_partial_codons_returned():
 
     # Test inputs
     window = "MTK"
-    last_n_codons = ["AUG", "ACA"]
+    last_n_codons = ["ATG", "ACA"]
     n_codons_in_scope = 2  # We only want the first 2 codons
 
     # Run the function
     result = montecarlo(window, last_n_codons, codon_sampler, seq_checker, n_codons_in_scope)
 
     # Check the result
-    assert result == ["AUG", "ACA"]
+    assert result == ["ATG", "ACA"]

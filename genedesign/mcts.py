@@ -1,7 +1,6 @@
 
 class MCTS:
     
-
     def __init__(self) -> None:
         self.mcts = None
 
@@ -11,3 +10,6 @@ class MCTS:
 
     def initiate(self) -> None:
         self.mcts
+
+    def run(self) -> str:
+        return NotImplemented
