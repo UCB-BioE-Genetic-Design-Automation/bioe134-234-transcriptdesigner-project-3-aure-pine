@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock
 from genedesign.seq_utils.sample_codon import SampleCodon
 from genedesign.seq_utils.check_seq import CheckSequence
-from genedesign.montecarlo import montecarlo  # Replace 'your_module' with the actual module name
+from genedesign.montecarlo import MonteCarlo
 
 def test_montecarlo_typical_case():
     # Mock the SampleCodon instance

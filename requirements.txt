@@ -1,3 +1,3 @@
 pytest
-biopython
 numpy
+Levenshtein

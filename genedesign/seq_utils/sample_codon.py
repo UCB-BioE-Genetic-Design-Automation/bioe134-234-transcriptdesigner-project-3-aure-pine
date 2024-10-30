@@ -17,6 +17,8 @@ class SampleCodon:
     
     def __init__(self) -> None:
         self.codon_probabilities = None
+        self.rng = None
+        self.amino_acids = None
 
     def initiate(self) -> None:
         """
@@ -32,6 +34,16 @@ class SampleCodon:
         Example:
         'A': (['GCT', 'GCC', 'GCA', 'GCG'], [0.4, 0.3, 0.2, 0.1])
         """
+        self.rng = np.random.default_rng()
+
+        self.amino_acids = np.array([
+                'A', 'R', 'N', 'D', 'C', 
+                'Q', 'E', 'G', 'H', 'I', 
+                'L', 'K', 'M', 'F', 'P', 
+                'S', 'T', 'W', 'Y', 'V',
+                '*'
+            ])
+
         # Initialize dictionary with empty lists for codons and probabilities
         self.codon_probabilities = {
             'A': ([], []), 'C': ([], []), 'D': ([], []), 'E': ([], []),
@@ -68,7 +80,6 @@ class SampleCodon:
                 np.array(probabilities)     # Convert probabilities list to numpy array
             )
 
-        
     def run(self, amino_acid:str) -> str:
         """
         Samples a codon for a given amino acid based on the stored CAI probabilities.
@@ -80,25 +91,26 @@ class SampleCodon:
         Returns:
         str: The sampled codon based on the CAI probabilities for the given amino acid.
         """
-        amino_acids = np.array([
-                'A', 'R', 'N', 'D', 'C', 
-                'Q', 'E', 'G', 'H', 'I', 
-                'L', 'K', 'M', 'F', 'P', 
-                'S', 'T', 'W', 'Y', 'V',
-                '*'
-            ])
-        if not amino_acid in amino_acids:
+        if not amino_acid in self.amino_acids:
             raise ValueError(f"Invalid amino acid: {amino_acid}.")
         codons, probs = self.codon_probabilities[amino_acid]
-        return str(np.random.choice(codons, p=probs))
+        return str(self.rng.choice(codons, p=probs))
 
     # For debugging
     def datastructure(self):
         return self.codon_probabilities
+    
+    def get_codons(self, amino_acid) -> list:
+        return self.codon_probabilities[amino_acid][0]
+    
+    def get_usages(self, amino_acid) -> list:
+        return self.codon_probabilities[amino_acid][1]
+    
+    def get_data(self, amino_acid) -> tuple[list, list]:
+        return self.codon_probabilities[amino_acid]
 
 if __name__ == "__main__":
-    rng = np.random.seed(seed=42)
-    aa1 = "A"
+    aa1 = "I"
     
     sampler = SampleCodon()
     sampler.initiate()

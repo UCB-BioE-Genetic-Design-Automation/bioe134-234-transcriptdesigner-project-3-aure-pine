@@ -1,111 +1,96 @@
 import pytest
 import numpy as np
-from unittest.mock import mock_open, patch
 from genedesign.seq_utils.sample_codon import SampleCodon
 
-np.random.seed(seed=42)
-
-# TESTS ON MOCKS
-# Test that `run` samples codons correctly based on the provided CAI probabilities
-def test_run_sampling():
-    # Mock the initiate method to avoid file operations
-    sampler = SampleCodon()
-    sampler.codon_probabilities = {
-        'A': (np.array(['GCT', 'GCC', 'GCA', 'GCG']), np.array([0.4, 0.3, 0.2, 0.1])),
-        'C': (np.array(['TGC', 'TGT']), np.array([0.6, 0.4]))
-    }
-
-    # Use a fixed seed to make the test deterministic
-    np.random.seed(42)
-    
-    # Test sampling for amino acid 'A'
-    codon = sampler.run('A')
-    assert codon in ['GCT', 'GCC', 'GCA', 'GCG']
-
-    # Test sampling for amino acid 'C'
-    codon = sampler.run('C')
-    assert codon in ['TGC', 'TGT']
-
-# Test invalid amino acid input handling
-def test_run_invalid_amino_acid():
-    sampler = SampleCodon()
-    sampler.codon_probabilities = {
-        'A': (np.array(['GCT', 'GCC', 'GCA', 'GCG']), np.array([0.4, 0.3, 0.2, 0.1])),
-        'C': (np.array(['TGC', 'TGT']), np.array([0.6, 0.4]))
-    }
-
-    with pytest.raises(ValueError, match="Invalid amino acid: X."):
-        sampler.run('X')  # Invalid amino acid 'X'
-
-# Test that probabilities sum up to 1
-def test_probability_sum():
-    sampler = SampleCodon()
-    sampler.codon_probabilities = {
-        'A': (np.array(['GCT', 'GCC', 'GCA', 'GCG']), np.array([0.4, 0.3, 0.2, 0.1])),
-        'C': (np.array(['TGC', 'TGT']), np.array([0.6, 0.4]))
-    }
-    
-    # Test that probabilities for 'A' sum to 1
-    assert np.isclose(np.sum(sampler.codon_probabilities['A'][1]), 1.0)
-
-    # Test that probabilities for 'C' sum to 1
-    assert np.isclose(np.sum(sampler.codon_probabilities['C'][1]), 1.0)
-
-# Test that the codon data structure is returned correctly
-def test_datastructure():
-    sampler = SampleCodon()
-    sampler.codon_probabilities = {
-        'A': (np.array(['GCT', 'GCC', 'GCA', 'GCG']), np.array([0.4, 0.3, 0.2, 0.1])),
-        'C': (np.array(['TGC', 'TGT']), np.array([0.6, 0.4]))
-    }
-
-    data_structure = sampler.datastructure()
-    assert 'A' in data_structure
-    assert 'C' in data_structure
-    assert np.array_equal(data_structure['A'][0], np.array(['GCT', 'GCC', 'GCA', 'GCG']))
-    assert np.array_equal(data_structure['C'][0], np.array(['TGC', 'TGT']))
-
-
-"""
-Running on the actual data
-"""
 # Define the fixture to initialize and load the codon usage data once
 @pytest.fixture(scope="module")
-def sample_codon():
+def sampler():
     sampler = SampleCodon()
     sampler.initiate()  # This will read from the actual 'genedesign/data/codon_usage.txt'
     return sampler
 
-# Test the initiate method using the actual file
-def test_initiate_with_actual_file(sample_codon):
-    # Example checks: Ensure that key amino acids have their codon data loaded correctly
-    # You can expand this by verifying all amino acids in your actual data
+def test_initiate_loads_data_correctly(sampler):
+    """Test that the initiate method correctly loads codon usage data."""
     
-    # Check 'A' for Alanine
-    codons, probabilities = sample_codon.codon_probabilities['A']
-    assert len(codons) > 0  # Ensure codons for 'A' were loaded
-    assert np.isclose(np.sum(probabilities), 1.0)  # Ensure probabilities sum to 1
+    # Check that codon_probabilities is populated
+    assert sampler.codon_probabilities, "codon_probabilities should not be empty after initiation"
     
-    # Check 'C' for Cysteine
-    codons, probabilities = sample_codon.codon_probabilities['C']
-    assert len(codons) > 0  # Ensure codons for 'C' were loaded
-    assert np.isclose(np.sum(probabilities), 1.0)  # Ensure probabilities sum to 1
+    # Check that known amino acids have data
+    amino_acid = 'A'
+    codons, probabilities = sampler.get_data(amino_acid)
+    assert len(codons) > 0, f"No codons found for amino acid '{amino_acid}'"
+    assert len(probabilities) > 0, f"No probabilities found for amino acid '{amino_acid}'"
+    assert np.isclose(np.sum(probabilities), 1.0), "Probabilities should sum to 1"
 
-# Test the run method with the actual file and data
-def test_run_with_actual_file(sample_codon):
-    # Use a fixed seed to make the test deterministic
-    np.random.seed(42)
+def test_run_returns_codon_from_correct_set(sampler):
+    """Test that the run method returns a codon from the correct set for a given amino acid."""
+    amino_acid = 'A'
+    codons = sampler.get_codons(amino_acid)
+    codon = sampler.run(amino_acid)
+    assert codon in codons, f"Codon '{codon}' not in expected codon list for amino acid '{amino_acid}'"
 
-    # Test sampling for Alanine ('A')
-    codon = sample_codon.run('A')
-    assert codon in sample_codon.codon_probabilities['A'][0]  # Ensure valid codon for 'A'
+def test_run_raises_value_error_for_invalid_amino_acid(sampler):
+    """Test that the run method raises a ValueError when an invalid amino acid is provided."""
+    with pytest.raises(ValueError):
+        sampler.run('Z')  # 'Z' is not a valid amino acid code
 
-    # Test sampling for Cysteine ('C')
-    codon = sample_codon.run('C')
-    assert codon in sample_codon.codon_probabilities['C'][0]  # Ensure valid codon for 'C'
+def test_run_sampling_probabilities(sampler):
+    """Test that the run method samples codons according to the specified probabilities."""
+    amino_acid = 'S'
+    codons, expected_probs = sampler.get_data(amino_acid)
+    num_samples = 100000
+    samples = [sampler.run(amino_acid) for _ in range(num_samples)]
+    counts = {codon: samples.count(codon) for codon in codons}
+    observed_probs = [counts[codon] / num_samples for codon in codons]
+    
+    # Compare observed probabilities with expected probabilities
+    for observed, expected in zip(observed_probs, expected_probs):
+        assert abs(observed - expected) < 0.01, f"Observed probability {observed} differs from expected {expected}"
 
-# Test that codon probabilities sum up to 1 for all amino acids
-def test_probability_sum_with_actual_file(sample_codon):
-    for amino_acid, (codons, probabilities) in sample_codon.codon_probabilities.items():
-        if len(probabilities) > 0:  # Only check amino acids with codons
-            assert np.isclose(np.sum(probabilities), 1.0), f"Probabilities for {amino_acid} do not sum to 1"
+def test_run_with_single_codon_amino_acid(sampler):
+    """Test that the run method correctly handles amino acids with a single codon."""
+    amino_acid = 'M'
+    codon = sampler.run(amino_acid)
+    assert codon == 'ATG', "Codon for amino acid 'M' should be 'ATG'"
+
+def test_run_with_stop_codon(sampler):
+    """Test that the run method correctly samples stop codons."""
+    amino_acid = '*'
+    codons = sampler.get_codons(amino_acid)
+    codon = sampler.run(amino_acid)
+    assert codon in codons, f"Codon '{codon}' not in expected stop codon list"
+
+def test_datastructure_method(sampler):
+    """Test that the datastructure method returns the correct codon probabilities dictionary."""
+    codon_probs = sampler.datastructure()
+    assert isinstance(codon_probs, dict), "datastructure should return a dictionary"
+    assert 'A' in codon_probs, "Amino acid 'A' should be in the codon probabilities dictionary"
+
+def test_get_codons_method(sampler):
+    """Test that the get_codons method returns the correct list of codons for an amino acid."""
+    amino_acid = 'A'
+    codons = sampler.get_codons(amino_acid)
+    assert len(codons) > 0, f"No codons found for amino acid '{amino_acid}'"
+
+def test_get_usages_method(sampler):
+    """Test that the get_usages method returns the correct probabilities for an amino acid."""
+    amino_acid = 'A'
+    usages = sampler.get_usages(amino_acid)
+    assert len(usages) > 0, f"No usages found for amino acid '{amino_acid}'"
+    assert np.isclose(np.sum(usages), 1.0), "Probabilities should sum to 1"
+
+def test_get_data_method(sampler):
+    """Test that the get_data method returns the correct codons and usages for an amino acid."""
+    amino_acid = 'A'
+    codons, usages = sampler.get_data(amino_acid)
+    assert len(codons) > 0, f"No codons found for amino acid '{amino_acid}'"
+    assert len(usages) > 0, f"No usages found for amino acid '{amino_acid}'"
+    assert np.isclose(np.sum(usages), 1.0), "Probabilities should sum to 1"
+
+def test_total_probability_sums_to_one(sampler):
+    """Test that the probabilities for each amino acid sum to 1."""
+    for amino_acid in sampler.amino_acids:
+        codons, usages = sampler.get_data(amino_acid)
+        if len(usages) > 0:
+            total_prob = np.sum(usages)
+            assert np.isclose(total_prob, 1.0), f"Total probability for amino acid '{amino_acid}' does not sum to 1"
