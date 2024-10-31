@@ -132,3 +132,9 @@ avg CAI: 0.36561386565057086
 avg rare codons: 0.49732620320855614
 Num True (good sequences): 5
 Num False (bad sequences): 182
+
+
+Using new checker (len(codon_counts) / 62 )
+For the most expressing genes:
+avg diversity: 0.7157150250129384, avg CAI: 0.36561386565057086, avg rare codons: 0.49732620320855614
+Num True: 167, Num False: 20

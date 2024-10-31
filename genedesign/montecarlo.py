@@ -31,30 +31,28 @@ class MonteCarlo():
         """
         Returns a tuple containing the generated RBSOption and the list of generated codons
         """
-        # Reset codon usages
-        self.sampler.reset_codon_usages()
-        # Find codon sequence
-        codons = self.__find_codons(peptide)
-        # Build the CDS from the codons
-        cds = ''.join(codons)
-        # Choose an RBS
-        selectedRBS = self.chooser.optimized_run(cds, ignores)
+        # # Find codon sequence
+        # codons = self.__find_codons(peptide)
+        # # Build the CDS from the codons
+        # cds = ''.join(codons)
+        # # Choose an RBS
+        # selectedRBS = self.chooser.optimized_run(cds, ignores)
 
-        # good_seq = False
-        # attempts = 0
-        # max_attempts = 50  # Limit attempts to prevent infinite loop
+        good_seq = False
+        attempts = 0
+        max_attempts = 50  # Limit attempts to prevent infinite loop
 
-        # while not good_seq and attempts < max_attempts:
-        #     # Find codon sequence
-        #     codons = self.__find_codons(peptide)
-        #     # Build the CDS from the codons
-        #     cds = ''.join(codons)
-        #     # Choose an RBS
-        #     selectedRBS = self.chooser.optimized_run(cds, ignores)
+        while not good_seq and attempts < max_attempts:
+            # Find codon sequence
+            codons = self.__find_codons(peptide)
+            # Build the CDS from the codons
+            cds = ''.join(codons)
+            # Choose an RBS
+            selectedRBS = self.chooser.optimized_run(cds, ignores)
 
-        #     full_seq = (selectedRBS.utr + cds).upper()
-        #     good_seq = self.checker.run(full_seq)[0]
-        #     attempts += 1
+            full_seq = (selectedRBS.utr + cds).upper()
+            good_seq = self.checker.run(full_seq)[0]
+            attempts += 1
 
         return selectedRBS, codons
     
@@ -108,7 +106,12 @@ class MonteCarlo():
                 generated_codons = [special_first_codon] + generated_codons
             
             codons_to_check = last_n_codons + generated_codons
-            good_seq, codon_diversity, rare_codon_count, cai_value = self.codon_checker.run(codons_to_check)
+
+            # Hack solution
+            if len(last_n_codons) >= 31:
+                good_seq, codon_diversity, rare_codon_count, cai_value = self.codon_checker.run(codons_to_check)
+            elif len(last_n_codons) < 31:
+                good_seq = True
             # print(f"Good seq: {good_seq}, CAI: {cai_value}, Diversity: {codon_diversity}, Rare codons: {rare_codon_count}")
 
             if good_seq:
@@ -116,7 +119,7 @@ class MonteCarlo():
 
             current_metrics = (cai_value, codon_diversity, -rare_codon_count)
 
-            if current_metrics > best_metrics: # comparison goes left to right, so left is most optimized side
+            if current_metrics > best_metrics: # comparison goes left to right, so left is most optimized side (cai, diversity, rare codons)
                 best_metrics = current_metrics
                 best_generated_codons = generated_codons
 
@@ -125,6 +128,8 @@ class MonteCarlo():
         if not good_seq:
             generated_codons = best_generated_codons
             print(f"Unable to generate a valid sequence for a window after {max_attempts} attempts. Returning the best sequence found.")
+
+        # print(f"CAI: {best_metrics[0]}, Diversity: {best_metrics[1]}, Rare codons: {best_metrics[2]}")
         
         # Return only the first n codons in scope
         return generated_codons[:n_codons_in_scope]

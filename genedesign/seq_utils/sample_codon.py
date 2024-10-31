@@ -19,7 +19,6 @@ class SampleCodon:
         self.codon_probabilities = None
         self.rng = None
         self.amino_acids = None
-        # self.codon_usage_counts = None  # Track codon usage
 
     def initiate(self) -> None:
         """
@@ -72,9 +71,6 @@ class SampleCodon:
                 np.array(codons),           # Convert codons list to numpy array
                 np.array(probabilities)     # Convert probabilities list to numpy array
             )
-        
-        # Initialize codon usage counts
-        # self.reset_codon_usages()
 
     def run(self, amino_acid:str) -> str:
         """
@@ -89,28 +85,11 @@ class SampleCodon:
         """
         if not amino_acid in self.amino_acids:
             raise ValueError(f"Invalid amino acid: {amino_acid}.")
-        codons, probs = self.codon_probabilities[amino_acid]
-
-        # # Calculate diversity-adjusted probabilities
-        # usage_counts = np.array([self.codon_usage_counts[codon] for codon in codons])
-        # # print(usage_counts)
-        # diversity_factor = 1 / (0.5 * usage_counts + 1)  # +1 to avoid division by zero
-        # # diversity_factor = np.exp(-0.5 * usage_counts)
-        # adjusted_probs = probs * diversity_factor
-
-        # # Normalize adjusted probabilities
-        # adjusted_probs /= adjusted_probs.sum()
         
-        # Sample codon
-        # selected_codon = str(self.rng.choice(codons, p=adjusted_probs))
+        codons, probs = self.codon_probabilities[amino_acid]
 
         # Sampling with replacement:
         selected_codon = str(self.rng.choice(codons, p=probs))
-
-        # print(f"Codon: {selected_codon}, Codons: {codons}, Probs: {adjusted_probs}")
-
-        # Update codon usage count
-        # self.codon_usage_counts[selected_codon] += 1
 
         return selected_codon
     
@@ -148,9 +127,5 @@ if __name__ == "__main__":
     # Print out the selected codons
     print(sampler.get_data(aa1))
     print(codon1), print(codon2)
-
-    codons, probs = sampler.codon_probabilities[aa1]
-    samples = sampler.rng.choice(codons, 26, p=probs)
-    print(samples)
     
     
