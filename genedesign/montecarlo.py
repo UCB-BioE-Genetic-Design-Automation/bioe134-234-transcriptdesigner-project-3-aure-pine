@@ -31,6 +31,8 @@ class MonteCarlo():
         """
         Returns a tuple containing the generated RBSOption and the list of generated codons
         """
+        # Reset codon usages
+        self.sampler.reset_codon_usages()
         # Find codon sequence
         codons = self.__find_codons(peptide)
         # Build the CDS from the codons
@@ -85,12 +87,6 @@ class MonteCarlo():
             special_codons = {'V': 'GTG', 'L': 'TTG', 'M': 'ATG'}
             special_first_codon = special_codons.get(first_amino_acid)
 
-            # If no special codon is found, default to 'M' codon ('ATG')
-            # Adds M to the beginning of the peptide sequence
-            # This was done to deal with translation/completeness checker failures
-            # if not special_first_codon:
-            #     special_first_codon = 'ATG'
-
             # Exclude the first amino acid since it's handled
             window = window[1:]
 
@@ -105,6 +101,7 @@ class MonteCarlo():
 
         # Continue sampling codons and checking the sequence until a valid one is generated, or choose the one the minimizes 
         while not good_seq and attempts < max_attempts:
+
             generated_codons = [self.sampler.run(amino_acid) for amino_acid in window]
             # Prepend the special first codon if applicable
             if special_first_codon:
@@ -112,7 +109,7 @@ class MonteCarlo():
             
             codons_to_check = last_n_codons + generated_codons
             good_seq, codon_diversity, rare_codon_count, cai_value = self.codon_checker.run(codons_to_check)
-            print(f"Good seq: {good_seq}, CAI: {cai_value}, Diversity: {codon_diversity}, Rare codons: {rare_codon_count}")
+            # print(f"Good seq: {good_seq}, CAI: {cai_value}, Diversity: {codon_diversity}, Rare codons: {rare_codon_count}")
 
             if good_seq:
                 break

@@ -19,6 +19,7 @@ class SampleCodon:
         self.codon_probabilities = None
         self.rng = None
         self.amino_acids = None
+        # self.codon_usage_counts = None  # Track codon usage
 
     def initiate(self) -> None:
         """
@@ -44,16 +45,8 @@ class SampleCodon:
                 '*'
             ])
 
-        # Initialize dictionary with empty lists for codons and probabilities
-        self.codon_probabilities = {
-            'A': ([], []), 'C': ([], []), 'D': ([], []), 'E': ([], []),
-            'F': ([], []), 'G': ([], []), 'H': ([], []), 'I': ([], []),
-            'K': ([], []), 'L': ([], []), 'N': ([], []), 'P': ([], []),
-            'Q': ([], []), 'R': ([], []), 'S': ([], []), 'T': ([], []),
-            'V': ([], []), 'W': ([], []), 'Y': ([], []), 
-            'M': ([], []),  # Start codon
-            '*': ([], [])  # Stop codons
-        }
+        # Initialize codon probabilities dict
+        self.codon_probabilities = {aa: ([], []) for aa in self.amino_acids}
 
         # Add values to the dictionary from the file
         codon_usage_file = 'genedesign/data/codon_usage.txt'
@@ -79,6 +72,9 @@ class SampleCodon:
                 np.array(codons),           # Convert codons list to numpy array
                 np.array(probabilities)     # Convert probabilities list to numpy array
             )
+        
+        # Initialize codon usage counts
+        # self.reset_codon_usages()
 
     def run(self, amino_acid:str) -> str:
         """
@@ -94,7 +90,36 @@ class SampleCodon:
         if not amino_acid in self.amino_acids:
             raise ValueError(f"Invalid amino acid: {amino_acid}.")
         codons, probs = self.codon_probabilities[amino_acid]
-        return str(self.rng.choice(codons, p=probs))
+
+        # # Calculate diversity-adjusted probabilities
+        # usage_counts = np.array([self.codon_usage_counts[codon] for codon in codons])
+        # # print(usage_counts)
+        # diversity_factor = 1 / (0.5 * usage_counts + 1)  # +1 to avoid division by zero
+        # # diversity_factor = np.exp(-0.5 * usage_counts)
+        # adjusted_probs = probs * diversity_factor
+
+        # # Normalize adjusted probabilities
+        # adjusted_probs /= adjusted_probs.sum()
+        
+        # Sample codon
+        # selected_codon = str(self.rng.choice(codons, p=adjusted_probs))
+
+        # Sampling with replacement:
+        selected_codon = str(self.rng.choice(codons, p=probs))
+
+        # print(f"Codon: {selected_codon}, Codons: {codons}, Probs: {adjusted_probs}")
+
+        # Update codon usage count
+        # self.codon_usage_counts[selected_codon] += 1
+
+        return selected_codon
+    
+    def reset_codon_usages(self) -> None:
+        """
+        Resets the codon usage counts for a new sequence generation.
+        """
+        self.codon_usage_counts = {codon: 0 for aa in self.amino_acids
+                                    for codon in self.codon_probabilities[aa][0]}
 
     # For debugging
     def datastructure(self):
@@ -112,6 +137,7 @@ class SampleCodon:
 if __name__ == "__main__":
     aa1 = "I"
     
+    
     sampler = SampleCodon()
     sampler.initiate()
 
@@ -120,6 +146,11 @@ if __name__ == "__main__":
     codon2 = sampler.run(aa1)
     
     # Print out the selected codons
+    print(sampler.get_data(aa1))
     print(codon1), print(codon2)
+
+    codons, probs = sampler.codon_probabilities[aa1]
+    samples = sampler.rng.choice(codons, 26, p=probs)
+    print(samples)
     
     

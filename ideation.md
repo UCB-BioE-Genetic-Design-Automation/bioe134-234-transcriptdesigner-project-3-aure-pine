@@ -109,3 +109,26 @@ ATA 0.01% from 0.09 to 0.10
 
 Decreased:
 AGC 0.01% from 0.27 to 0.26
+
+
+## 20241030
+How should I refactor everything?
+
+- Code is independent of organism
+    - Don't need heuristics from E. coli to run, using just the supplied files to make conclusions about everything.
+- Figure out sampling
+    - How do I increase diversity above 0.5 and keep rare codons below 3, while also maximizing CAI
+    - "These are the bounds, find the highest CAI"
+    
+
+
+
+
+
+
+Found values using the top 187 most expressing genes:
+avg diversity: 0.24393129387900409
+avg CAI: 0.36561386565057086
+avg rare codons: 0.49732620320855614
+Num True (good sequences): 5
+Num False (bad sequences): 182
