@@ -105,7 +105,7 @@ I got lazy... I can go back and rewrite this function if needed to make a proper
 
 Increased
 AGG 0.01% from 0.03 to 0.04
-ATA 0.01% from 0.09 to 0.10
+ATC 0.01% from 0.40 to 0.41
 
 Decreased:
 AGC 0.01% from 0.27 to 0.26
@@ -136,5 +136,9 @@ Num False (bad sequences): 182
 
 Using new checker (len(codon_counts) / 62 )
 For the most expressing genes:
-avg diversity: 0.7157150250129384, avg CAI: 0.36561386565057086, avg rare codons: 0.49732620320855614
+avg diversity: 0.7157150250129384
+avg CAI: 0.36561386565057086
+avg rare codons: 0.49732620320855614
 Num True: 167, Num False: 20
+
+

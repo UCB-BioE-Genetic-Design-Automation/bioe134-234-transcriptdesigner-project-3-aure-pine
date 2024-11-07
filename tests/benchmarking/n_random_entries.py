@@ -70,4 +70,4 @@ if __name__ == "__main__":
     entries_to_test = 5
     fasta_file = "tests/benchmarking/uniprotkb_proteome_UP000054015_2024_09_24.fasta"
     # print(sample_entries(fasta_file, entries_to_test, rng))
-    run_benchmark(fasta_file, entries_to_test, rng)
+    run_benchmark(fasta_file, entries_to_test, rng) 

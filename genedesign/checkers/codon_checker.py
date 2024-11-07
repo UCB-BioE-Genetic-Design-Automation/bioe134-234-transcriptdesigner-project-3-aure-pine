@@ -83,6 +83,75 @@ class CodonChecker:
                               cai_value >= cai_threshold)
 
         return codons_above_board, codon_diversity, rare_codon_count, cai_value
+    
+    def my_run(self, cds: list[str], len_peptide:int) -> tuple[bool, float, int, float]:
+        """
+        Calculates codon diversity, rare codon count, and Codon Adaptation Index (CAI) for the provided CDS.
+        Returns a boolean indicating whether the codons pass specified thresholds.
+
+        :param cds: List of codons representing the CDS.
+        :return: Tuple containing a boolean, codon diversity, rare codon count, and CAI score.
+        """
+        if not cds:
+            return False, 0.0, 0, 0.0  # Return false for empty CDS
+        
+        # Thresholds to determine if the codons are above board
+        diversity_threshold = 0.5
+        global_rare_codon_limit = 3
+        cai_threshold = 0.2
+        max_diff_codons = 62 # 
+
+        codon_counts = Counter(cds)
+        num_cds_codons = len(cds)
+
+        # Calculate codon diversity
+        codon_diversity = self.calc_codon_diversity(codon_counts, num_cds_codons, diversity_threshold, max_diff_codons)
+        # codon_diversity = len(codon_counts) / 62
+
+
+        # Count rare codons
+        rare_codon_count = sum(codon_counts.get(codon, 0) for codon in self.rare_codons if codon in cds)
+        section_rare_codon_limit = self.rare_codon_limit(num_cds_codons, len_peptide, global_rare_codon_limit)
+        # print(section_rare_codon_limit)
+
+        # Calculate CAI (Codon Adaptation Index) as the geometric mean of codon frequencies
+        cai_value = self.calc_cai(cds)
+
+        codons_above_board = (codon_diversity >= diversity_threshold and
+                              rare_codon_count <= section_rare_codon_limit and
+                              cai_value >= cai_threshold)
+
+        return codons_above_board, codon_diversity, rare_codon_count, cai_value
+    
+    def calc_codon_diversity(self, codon_counts, num_codons, diversity_threshold, max_diff_codons):
+        num_diff_codons = len(codon_counts)
+        if num_codons < max_diff_codons * diversity_threshold: # If num_codons is less than the min number of codons needed to pass the test
+            return num_diff_codons / num_codons
+        else:
+            return num_diff_codons / max_diff_codons
+        
+    def rare_codon_limit(self, current_length, peptide_length, global_rare_codon_limit):
+        section_length = peptide_length // global_rare_codon_limit
+        
+        # Determine which section we're in based on current length
+        section_index = min(current_length // section_length, global_rare_codon_limit - 1)
+
+        # Calculate rare_codon_limit directly
+        if section_index < global_rare_codon_limit - 1:
+            rare_codon_limit = section_index + 1
+        else:
+            rare_codon_limit = global_rare_codon_limit
+
+        return rare_codon_limit
+
+    def calc_cai(self, cds):
+        cai_numerators = [self.codon_frequencies.get(codon, 0.01) for codon in cds]  # Use 0.01 for unknown codons
+        cai_product = 1
+        for freq in cai_numerators:
+            cai_product *= freq
+        
+        cai_value = cai_product ** (1 / len(cai_numerators)) if cai_numerators else 0.0
+        return cai_value
 
 class CodonChecker2:
     """
@@ -188,9 +257,11 @@ if __name__ == "__main__":
     # Hardcoded example CDS
     cds = ['ATG', 'CAA', 'GGG', 'TAA']  # High CAI example
     # cds = ['AGG', 'AGA', 'AGG', 'AGA']  # Very low CAI example
+
+    cds2 = ['ATG'] + ['AAC', 'GAC', 'TGC', 'TAC', 'CAC', 'TTC', 'ATC', 'AAG', 'GAG', 'CAG'] * 3
     
     # Run CodonChecker
-    codons_above_board, codon_diversity, rare_codon_count, cai_value = codon_checker.run(cds)
+    codons_above_board, codon_diversity, rare_codon_count, cai_value = codon_checker.run(cds2)
 
     # Print results
     print(f"CDS: {cds}")
