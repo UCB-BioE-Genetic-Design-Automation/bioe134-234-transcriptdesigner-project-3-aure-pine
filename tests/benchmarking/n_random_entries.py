@@ -67,7 +67,7 @@ def run_benchmark(fasta_file, n_entries, rng):
 
 if __name__ == "__main__":
     rng = np.random.default_rng(seed=42)
-    entries_to_test = 5
+    entries_to_test = 25
     fasta_file = "tests/benchmarking/uniprotkb_proteome_UP000054015_2024_09_24.fasta"
     # print(sample_entries(fasta_file, entries_to_test, rng))
     run_benchmark(fasta_file, entries_to_test, rng) 

@@ -12,6 +12,10 @@ class CheckSequence:
         self.codon_checker = None
         self.forbidden_checker = None
         self.promoter_checker = None
+
+        self.last_checked_positions = None
+        self.window_sizes = None
+        self.gc_count = None
         
     def initiate(self) -> None:
         self.forbidden_checker = ForbiddenSequenceChecker()
@@ -21,6 +25,24 @@ class CheckSequence:
         self.forbidden_checker.initiate()
         self.promoter_checker.initiate()
         self.codon_checker.initiate()
+
+        self.gc_count = 0
+
+        # Initialize last checked positions for each checker
+        self.last_checked_positions = {
+            'forbidden': 0,
+            'promoter': 0,
+            'hairpin': 0,
+            'gc_content': 0
+        }
+        
+        # Define window sizes for each checker
+        self.window_sizes = {
+            'forbidden': 8,  
+            'promoter': 29,    
+            'hairpin': 50,                                    
+            'gc_content': 50                                  
+        }
 
     def run(self, generated_codons: list[str], codons: list[str], rbs: RBSOption, len_peptide) -> tuple[bool, float]:
         results = []
@@ -32,18 +54,81 @@ class CheckSequence:
         #only want 25 bp into the rbs utr
         # 50 - (25 + 18, already generated) = 7, so window size should be 3? This is perfect
         
-        dna_seq = ''.join(codons)
+        dna_seq = ''.join(all_codons)
         full_seq = self.combine_sequences(rbs.utr, dna_seq)
+        seq_length = len(full_seq)
 
-        results.append(self.forbidden_checker.run(full_seq)[0])
-        results.append(self.promoter_checker.run(full_seq)[0])
-        results.append(hairpin_checker(full_seq)[0])
-        results.append(gc_checker(full_seq)[0])
-        # results.append(rnase_checker(full_seq))
+        checker_results = []
 
+        # ---- Forbidden Sequence Checker ----
+        # Get last checked position and calculate new base pairs
+        last_pos = self.last_checked_positions['forbidden']
+        num_new_bp = seq_length - last_pos
+        max_forbidden_seq_length = self.window_sizes['forbidden']
+
+        if num_new_bp > 0:
+            start_pos = max(0, last_pos - (max_forbidden_seq_length - 1))
+            forbidden_seq_to_check = full_seq[start_pos:seq_length]
+            result = self.forbidden_checker.run(forbidden_seq_to_check)[0]
+            checker_results.append(result)
+            self.last_checked_positions['forbidden'] = seq_length
+        else:
+            pass # can add different handling here
+
+        # ---- GC Content Checker ----
+        last_pos_gc = self.last_checked_positions['gc_content']
+        num_new_bp_gc = seq_length - last_pos_gc
+        gc_min_length = self.window_sizes['gc_content']
+
+        if seq_length >= gc_min_length and num_new_bp_gc > 0:
+            start_pos_gc = max(0, last_pos - (max_forbidden_seq_length - 1))
+            sequence_to_check_gc = full_seq[start_pos_gc:seq_length]
+            gc_result = gc_checker(sequence_to_check_gc)[0]
+            checker_results.append(gc_result)
+            self.last_checked_positions['gc_content'] = seq_length
+        else:
+            pass
+
+
+        # ---- Other Checkers ----
+        # Checkers with windows
+        for checker_name in ['promoter', 'hairpin']:
+            last_pos = self.last_checked_positions[checker_name]
+            window_size = self.window_sizes[checker_name]
+            
+            # Calculate the number of new base pairs since last checked
+            num_new_bp = seq_length - last_pos
+
+            if num_new_bp >= window_size:
+                # Adjust start position to include overlaps
+                start_pos = max(0, last_pos - (window_size - 1))
+                end_pos = seq_length
+                
+                # Extract the sequence to check
+                sequence_to_check = full_seq[start_pos:end_pos]
+
+                # Run the checker
+                if checker_name == 'promoter':
+                    result = self.promoter_checker.run(sequence_to_check)[0]
+                elif checker_name == 'hairpin':
+                    result = hairpin_checker(sequence_to_check)[0]
+
+                # Append the result
+                checker_results.append(result)
+
+                # Update the last checked position
+                self.last_checked_positions[checker_name] = seq_length
+            else:
+                # Not enough new base pairs; skip this checker
+                # Optionally, you can assume the previous result remains valid
+                pass  # Or handle as needed
+
+        # Append checker results to overall results
+        results.extend(checker_results)
+
+        # Compute overall result and score
         num_true = sum(results)
         result = all(results)
-
         normalized_num_true = num_true / len(results)
 
         # Higher is better

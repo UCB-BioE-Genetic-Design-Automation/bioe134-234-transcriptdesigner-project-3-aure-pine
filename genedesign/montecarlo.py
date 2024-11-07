@@ -4,6 +4,7 @@ from genedesign.rbs_chooser import RBSChooser
 from genedesign.seq_utils.sample_codon import SampleCodon
 from genedesign.seq_utils.check_seq import CheckSequence
 from genedesign.checkers.codon_checker import CodonChecker
+from genedesign.seq_utils.Translate import Translate
 class MonteCarlo():
     def __init__(self):
         # Params
@@ -22,6 +23,9 @@ class MonteCarlo():
         self.chooser.initiate()
         self.checker.initiate()
         self.codon_checker.initiate()
+
+        self.translator = Translate()
+        self.translator.initiate()
     
     def run(self, peptide:str, ignores:set) -> tuple[RBSOption, list[str]]:
         if not peptide:
@@ -39,12 +43,18 @@ class MonteCarlo():
         codons.extend(first_6_codons)
 
         # Phase 2:
-        len_codons = len(codons)
-        rest_peptide = full_peptide[len_codons:]
+        len_first_6_aas = len(first_6_aas)
+        rest_peptide = full_peptide[len_first_6_aas:]
 
         for window in sliding_window_generator(rest_peptide, n_in_scope=self.n_codons_in_scope, n_ahead=self.n_ahead, step=self.step):
             window_codons = self.__find_codons(window, codons, selected_RBS, len_peptide)
             codons.extend(window_codons)
+            print(window)
+            
+        if len(codons) != len(full_peptide):
+            print("Mismatch between codons and amino acids.")
+            print(f"num codons: {len(codons)}, num amino acids: {len(peptide)}")
+            print()
 
         return selected_RBS, codons
     
@@ -101,15 +111,14 @@ class MonteCarlo():
             window = window[1:]
 
         # Generate
-        generated_codons = [self.sampler.run(amino_acid) for amino_acid in window]
+        window_codons = [self.sampler.run(amino_acid) for amino_acid in window]
 
         # Prepend the special first codon if applicable
         if special_first_codon:
-            generated_codons = [special_first_codon] + generated_codons
+            window_codons = [special_first_codon] + window_codons
 
         # Return the full window
-        return generated_codons
-    
+        return window_codons
 
     # def run1(self, peptide:str, ignores:set) -> tuple[RBSOption, list[str]]:
     #     """

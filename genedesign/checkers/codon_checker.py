@@ -108,7 +108,6 @@ class CodonChecker:
         codon_diversity = self.calc_codon_diversity(codon_counts, num_cds_codons, diversity_threshold, max_diff_codons)
         # codon_diversity = len(codon_counts) / 62
 
-
         # Count rare codons
         rare_codon_count = sum(codon_counts.get(codon, 0) for codon in self.rare_codons if codon in cds)
         section_rare_codon_limit = self.rare_codon_limit(num_cds_codons, len_peptide, global_rare_codon_limit)
